@@ -1,25 +1,30 @@
 ---
-# https://vitepress.dev/reference/default-theme-home-page
 layout: home
 
 hero:
-  name: "My Awesome Project"
-  text: "A VitePress Site"
-  tagline: My great project tagline
+  name: 代码的诗
+  text: 分享编程知识
+  tagline: 深度解读编程知识
+  image:
+    src: /images/logo.jpg
+    alt: shenlink
   actions:
     - theme: brand
-      text: Markdown Examples
-      link: /markdown-examples
+      text: 计算机基础
+      link: /articles/cs/00.introduction
     - theme: alt
-      text: API Examples
-      link: /api-examples
+      text: 编程之美
+      link: /articles/code/00.introduction
+    - theme: alt
+      text: 博客
+      link: /articles/blog/00.introduction
 
 features:
-  - title: Feature A
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature B
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature C
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+  - title: 注重基础
+    details: 基础不牢，地动山摇
+  - title: 注重规范
+    details: 编程是团队协作，需要规范
+  - title: 注重实践
+    details: 编程是实践技能，一定要多实践
 ---
 
