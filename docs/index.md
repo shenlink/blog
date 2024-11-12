@@ -11,13 +11,13 @@ hero:
   actions:
     - theme: brand
       text: 计算机基础
-      link: /articles/cs/00.introduction
+      link: /articles/cs/introduction
     - theme: alt
       text: 编程之美
-      link: /articles/code/00.introduction
+      link: /articles/code/introduction
     - theme: alt
       text: 博客
-      link: /articles/blog/00.introduction
+      link: /articles/blog/introduction
 
 features:
   - title: 注重基础
