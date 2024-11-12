@@ -3,6 +3,22 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: "代码的诗",
   description: "分享编程知识",
+  head: [
+    // 插入百度统计的脚本
+    [
+      'script',
+      {},
+      `
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?9c2fdd102f0a62fbd1b5b9195edd14ed";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+      `,
+    ],
+  ],
   themeConfig: {
     nav: [
       { text: '首页', link: '/' },
