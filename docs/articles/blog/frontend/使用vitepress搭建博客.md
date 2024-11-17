@@ -77,6 +77,7 @@ docs 目录作为 VitePress 站点的项目根目录。.vitepress 目录是 Vite
 ```typescript
 // .vitepress/config.mts
 import { defineConfig } from 'vitepress'
+import sidebarConfig from './plugins/generate_sidebar.js'
 
 export default defineConfig({
   title: "代码的诗",
@@ -120,57 +121,7 @@ export default defineConfig({
         ]
       }
     ],
-
-    sidebar: {
-      '/articles/cs/': [
-        {
-          text: '数据结构与算法', collapsed: true, items: [
-            { text: '数据结构与算法介绍', link: '/articles/cs/algorithms/introduction' },
-            { text: '动态数组', link: '/articles/cs/algorithms/动态数组' },
-          ]
-        }
-      ],
-      '/articles/cs/algorithms/': [
-        { text: '数据结构与算法介绍', link: '/articles/cs/algorithms/introduction' },
-        { text: '动态数组', link: '/articles/cs/algorithms/动态数组' },
-      ],
-      '/articles/code/': [
-        {
-          text: '设计模式', collapsed: true, items: [
-            { text: '设计模式介绍', link: '/articles/code/design-pattern/introduction' },
-            { text: '单例模式', link: '/articles/code/design-pattern/单例模式' },
-          ]
-        }
-      ],
-      '/articles/code/design-pattern/': [
-        { text: '设计模式介绍', link: '/articles/code/design-pattern/introduction' },
-        { text: '单例模式', link: '/articles/code/design-pattern/单例模式' },
-      ],
-      '/articles/blog/': [
-        {
-          text: 'php', collapsed: true, items: [
-            { text: 'php介绍', link: '/articles/blog/php/introduction' },
-            { text: 'FastAdmin的搜索加上selectpage的重置功能', link: '/articles/blog/php/FastAdmin的搜索加上selectpage的重置功能' },
-          ]
-        },
-        {
-          text: 'frontend', collapsed: true, items: [
-            { text: '前端介绍', link: '/articles/blog/frontend/introduction' },
-            { text: '使用vitepress搭建博客', link: '/articles/blog/frontend/使用vitepress搭建博客' },
-          ]
-        }
-      ],
-      '/articles/blog/php/': [
-        { text: 'php介绍', link: '/articles/blog/php/introduction' },
-        { text: 'FastAdmin的搜索加上selectpage的重置功能', link: '/articles/blog/php/FastAdmin的搜索加上selectpage的重置功能' },
-      ],
-      '/articles/blog/frontend/': [
-        { text: '前端介绍', link: '/articles/blog/frontend/introduction' },
-        { text: '使用vitepress搭建博客', link: '/articles/blog/frontend/使用vitepress搭建博客' },
-      ]
-
-    },
-
+    sidebar: sidebarConfig('articles'),
     socialLinks: [
       { icon: 'github', link: 'https://github.com/shenlink' }
     ],
@@ -183,6 +134,108 @@ export default defineConfig({
 
 ```
 
+自动生成侧边栏的插件代码如下：
+
+```typeScript
+// SidebarItem.ts
+
+// 定义 SidebarItem 的类型
+export interface SidebarItem {
+    text: string;
+    link?: string;
+    collapsed?: boolean;
+    items?: SidebarItem[];
+}
+```
+
+```typeScript
+// generate_sidebar.ts
+
+import fs from 'fs';
+import path from 'path';
+import { SidebarItem } from './SidebarItem'
+
+// 递归扫描目录并生成 sidebar
+function generateSidebar(articlesDir: string): { [key: string]: SidebarItem[] } {
+  const sidebar: { [key: string]: SidebarItem[] } = {};
+  // 构建 articlesDir 的绝对路径
+  const baseDir = path.resolve(__dirname, '../../', articlesDir);
+  // 需要跳过的顶级目录列表
+  const skipDirs = fs.readdirSync(baseDir);
+  // 扫描目录
+  function scanDirectory(dir: string): SidebarItem[] {
+    const items: SidebarItem[] = [];
+    const files = fs.readdirSync(dir);
+    // 先收集所有的 .md 文件
+    const mdFiles: SidebarItem[] = [];
+    files.forEach((file) => {
+      const filePath = path.join(dir, file);
+      // 判断是否是 skipDirs 目录下的 introduction.md 文件，跳过
+      const dirName = path.basename(dir);
+      if (skipDirs.includes(dirName) && file === 'introduction.md') return;
+
+      const stat = fs.statSync(filePath);
+      if (stat.isDirectory()) {
+        // 如果是文件夹，递归扫描该文件夹
+        items.push({
+          text: file,
+          collapsed: true,
+          // 递归进入子目录
+          items: scanDirectory(filePath),
+        });
+      } else if (file.endsWith('.md')) {
+        // 如果是Markdown文件，添加到列表
+        mdFiles.push({
+          text: file.replace('.md', ''),
+          link: `/${articlesDir}/${dir.replace(baseDir, '').replace(/\\/g, '/').replace(/^\//, '').replace(/\/$/, '')}/${file.replace('.md', '')}`,
+        });
+      }
+    });
+
+    // 将 introduction.md 文件放在最前面
+    const introIndex = mdFiles.findIndex(file => file.text.toLowerCase() === 'introduction');
+    if (introIndex !== -1) {
+      // 找到并移除 introduction.md
+      const introFile = mdFiles.splice(introIndex, 1)[0];
+      // 将 introduction.md 放在最前面
+      mdFiles.unshift(introFile);
+    }
+
+    // 将所有文件添加到 items 数组
+    items.push(...mdFiles);
+
+    return items;
+  }
+
+  const categories = fs.readdirSync(baseDir);
+
+  categories.forEach((category) => {
+    const categoryPath = path.join(baseDir, category);
+
+    const stat = fs.statSync(categoryPath);
+    if (stat.isDirectory()) {
+      // 为每个articlesDir目录的目录生成 sidebar 配置
+      sidebar[`/${articlesDir}/${category}/`] = scanDirectory(categoryPath);
+      // 递归处理子目录
+      const subCategoryPaths = fs.readdirSync(categoryPath);
+      subCategoryPaths.forEach((subCategory) => {
+        const subCategoryPath = path.join(categoryPath, subCategory);
+        const subStat = fs.statSync(subCategoryPath);
+        if (subStat.isDirectory()) {
+          sidebar[`/${articlesDir}/${category}/${subCategory}/`] = scanDirectory(subCategoryPath);
+        }
+      });
+    }
+  });
+  return sidebar;
+}
+
+export default generateSidebar;
+
+```
+
+可以根据需要修改
+
 ## 部署到nginx
 
 运行命令，生成最终的发布版文件
@@ -191,36 +244,23 @@ export default defineConfig({
 npm run docs:build
 ```
 
-在./docs/.vitepress/dist/目录下面
+编译后的发布版文件在./docs/.vitepress/dist/目录下面
+
 nginx配置文件参考如下：
 ```conf
-server {
-    gzip on;
-    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
-
+server
+{
     listen 80;
-    server_name _;
-    index index.html;
+    server_name hxqzzxk.com;
+    index index.php index.html index.htm default.php default.htm default.html;
+    root /www/wwwroot/hxqzzxk/docs/.vitepress/dist;
 
-    location / {
-        # content location
-        root /app;
+    #ERROR-PAGE-START  错误页配置，可以注释、删除或修改
+    error_page 404 /404.html;
+    #error_page 502 /502.html;
+    #ERROR-PAGE-END
 
-        # exact matches -> reverse clean urls -> folders -> not found
-        try_files $uri $uri.html $uri/ =404;
-
-        # non existent pages
-        error_page 404 /404.html;
-
-        # a folder without index.html raises 403 in this setup
-        error_page 403 /404.html;
-
-        # adjust caching headers
-        # files in the assets folder have hashes filenames
-        location ~* ^/assets/ {
-            expires 1y;
-            add_header Cache-Control "public, immutable";
-        }
-    }
+    access_log  /www/wwwlogs/hxqzzxk.com.log;
+    error_log  /www/wwwlogs/hxqzzxk.com.error.log;
 }
 ```
