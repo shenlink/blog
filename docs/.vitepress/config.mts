@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitepress'
+import sidebarConfig from './plugins/generate_sidebar.js'
 
 export default defineConfig({
   title: "代码的诗",
@@ -42,57 +43,7 @@ export default defineConfig({
         ]
       }
     ],
-
-    sidebar: {
-      '/articles/cs/': [
-        {
-          text: '数据结构与算法', collapsed: true, items: [
-            { text: '数据结构与算法介绍', link: '/articles/cs/algorithms/introduction' },
-            { text: '动态数组', link: '/articles/cs/algorithms/动态数组' },
-          ]
-        }
-      ],
-      '/articles/cs/algorithms/': [
-        { text: '数据结构与算法介绍', link: '/articles/cs/algorithms/introduction' },
-        { text: '动态数组', link: '/articles/cs/algorithms/动态数组' },
-      ],
-      '/articles/code/': [
-        {
-          text: '设计模式', collapsed: true, items: [
-            { text: '设计模式介绍', link: '/articles/code/design-pattern/introduction' },
-            { text: '单例模式', link: '/articles/code/design-pattern/单例模式' },
-          ]
-        }
-      ],
-      '/articles/code/design-pattern/': [
-        { text: '设计模式介绍', link: '/articles/code/design-pattern/introduction' },
-        { text: '单例模式', link: '/articles/code/design-pattern/单例模式' },
-      ],
-      '/articles/blog/': [
-        {
-          text: 'php', collapsed: true, items: [
-            { text: 'php介绍', link: '/articles/blog/php/introduction' },
-            { text: 'FastAdmin的搜索加上selectpage的重置功能', link: '/articles/blog/php/FastAdmin的搜索加上selectpage的重置功能' },
-          ]
-        },
-        {
-          text: 'frontend', collapsed: true, items: [
-            { text: '前端介绍', link: '/articles/blog/frontend/introduction' },
-            { text: '使用vitepress搭建博客', link: '/articles/blog/frontend/使用vitepress搭建博客' },
-          ]
-        }
-      ],
-      '/articles/blog/php/': [
-        { text: 'php介绍', link: '/articles/blog/php/introduction' },
-        { text: 'FastAdmin的搜索加上selectpage的重置功能', link: '/articles/blog/php/FastAdmin的搜索加上selectpage的重置功能' },
-      ],
-      '/articles/blog/frontend/': [
-        { text: '前端介绍', link: '/articles/blog/frontend/introduction' },
-        { text: '使用vitepress搭建博客', link: '/articles/blog/frontend/使用vitepress搭建博客' },
-      ]
-
-    },
-
+    sidebar: sidebarConfig('articles'),
     socialLinks: [
       { icon: 'github', link: 'https://github.com/shenlink' }
     ],
