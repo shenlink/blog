@@ -13,13 +13,13 @@ outline: deep
   
 ## 安装vitepress
 
-### 单独安装
+### 安装vitepress依赖
 
 ```npm
 npm add -D vitepress
 ```
 
-## 安装向导
+### 安装向导
 
 VitePress 附带一个命令行设置向导，可以帮助你构建一个基本项目。安装后，通过运行以下命令启动向导：
 
