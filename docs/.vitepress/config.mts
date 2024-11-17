@@ -37,7 +37,8 @@ export default defineConfig({
       {
         text: '博客',
         items: [
-          { text: 'php', link: '/articles/blog/php/introduction' }
+          { text: 'php', link: '/articles/blog/php/introduction' },
+          { text: 'frontend', link: '/articles/blog/frontend/introduction' }
         ]
       }
     ],
@@ -73,11 +74,21 @@ export default defineConfig({
             { text: 'php介绍', link: '/articles/blog/php/introduction' },
             { text: 'FastAdmin的搜索加上selectpage的重置功能', link: '/articles/blog/php/FastAdmin的搜索加上selectpage的重置功能' },
           ]
+        },
+        {
+          text: 'frontend', collapsed: true, items: [
+            { text: '前端介绍', link: '/articles/blog/frontend/introduction' },
+            { text: '使用vitepress搭建博客', link: '/articles/blog/frontend/使用vitepress搭建博客' },
+          ]
         }
       ],
       '/articles/blog/php/': [
         { text: 'php介绍', link: '/articles/blog/php/introduction' },
         { text: 'FastAdmin的搜索加上selectpage的重置功能', link: '/articles/blog/php/FastAdmin的搜索加上selectpage的重置功能' },
+      ],
+      '/articles/blog/frontend/': [
+        { text: '前端介绍', link: '/articles/blog/frontend/introduction' },
+        { text: '使用vitepress搭建博客', link: '/articles/blog/frontend/使用vitepress搭建博客' },
       ]
 
     },
