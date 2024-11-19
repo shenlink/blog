@@ -10,14 +10,14 @@ function generateNavbar(articlesDir: string): Array<NavItem> {
     const baseDir = path.resolve(__dirname, '../../../', articlesDir);
     const nav: NavItem[] = [];
     nav.push({ text: '首页', link: '/' });
-    const files = fs.readdirSync(baseDir);
+    const categories = fs.readdirSync(baseDir);
     const items: NavItems = {};
-    files.forEach((file) => {
+    categories.forEach((file) => {
         const filePath = path.join(baseDir, file);
-        const subDirectory = fs.readdirSync(filePath);
+        const subCategories = fs.readdirSync(filePath);
         const subItems: NavItemWithLink[] = [];
         const subCategoryOrders = subCategoryOrdersConfig[file] || []
-        const sortedDirectory = subDirectory.sort((a, b) => {
+        const sortedSubCategories = subCategories.sort((a, b) => {
             // 检查 a 和 b 是否在 subCategoryOrders 中
             const indexA = subCategoryOrders.indexOf(a);
             const indexB = subCategoryOrders.indexOf(b);
@@ -39,12 +39,12 @@ function generateNavbar(articlesDir: string): Array<NavItem> {
             }
             return 0;
         });
-        const subFolderNameMap = subCategoryNamesConfig[file]
-        sortedDirectory.forEach((item) => {
+        const subCategoryNames = subCategoryNamesConfig[file]
+        sortedSubCategories.forEach((item) => {
             if (item === 'introduction.md') {
                 return;
             }
-            const text = subFolderNameMap[item] || item;
+            const text = subCategoryNames[item] || item;
             subItems.push({
                 text: text,
                 link: `${articlesDir}/${file}/${item}/introduction`,
@@ -58,7 +58,7 @@ function generateNavbar(articlesDir: string): Array<NavItem> {
         };
     });
 
-    // 排序 nav，根据 customOrder 顺序
+    // 排序 nav，根据 categoryOrderConfig 顺序
     categoryOrderConfig.forEach((folder) => {
         if (items[folder]) {
             nav.push(items[folder]);
