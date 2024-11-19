@@ -11,17 +11,18 @@ function generateSidebar(articlesDir: string): Sidebar {
     const sidebar: Sidebar = {};
     // 构建 articlesDir 的绝对路径
     const baseDir = path.resolve(__dirname, '../../../', articlesDir);
+    const categories = fs.readdirSync(baseDir);
     // 需要跳过的顶级目录列表
-    const skipDirs = fs.readdirSync(baseDir);
-    let subDirectoryNames: SubCategoryNames = {}
+    const skipDirs = categories;
+    let subCategoryNames: SubCategoryNames = {}
     // 扫描目录
     function scanDirectory(dir: string): SidebarItem[] {
         const items: SidebarItem[] = [];
         const files = fs.readdirSync(dir);
         const categoryOrder = subCategoryOrdersConfig[path.basename(dir)] || []
-        let sortedDirectory = files
+        let sortedFiles = files
         if (categoryOrder.length !== 0) {
-            sortedDirectory = files.sort((a, b) => {
+            sortedFiles = files.sort((a, b) => {
                 // 检查 a 和 b 是否在 customSortOrder 中
                 const indexA = categoryOrder.indexOf(a);
                 const indexB = categoryOrder.indexOf(b);
@@ -46,7 +47,7 @@ function generateSidebar(articlesDir: string): Sidebar {
         }
         // 先收集所有的 .md 文件
         const mdFiles: SidebarItem[] = [];
-        sortedDirectory.forEach((file) => {
+        sortedFiles.forEach((file) => {
             const filePath = path.join(dir, file);
             // 判断是否是 skipDirs 目录下的 introduction.md 文件，跳过
             const dirName = path.basename(dir);
@@ -55,7 +56,7 @@ function generateSidebar(articlesDir: string): Sidebar {
             if (stat.isDirectory()) {
                 // 如果是文件夹，递归扫描该文件夹
                 items.push({
-                    text: subDirectoryNames[file] || file,
+                    text: subCategoryNames[file] || file,
                     collapsed: true,
                     // 递归进入子目录
                     items: scanDirectory(filePath),
@@ -84,21 +85,20 @@ function generateSidebar(articlesDir: string): Sidebar {
         return items;
     }
 
-    const directories = fs.readdirSync(baseDir);
-    directories.forEach((directory) => {
-        const categoryPath = path.join(baseDir, directory);
+    categories.forEach((category) => {
+        const categoryPath = path.join(baseDir, category);
         const stat = fs.statSync(categoryPath);
-        subDirectoryNames = subCategoryNamesConfig[directory] || []
+        subCategoryNames = subCategoryNamesConfig[category] || []
         if (stat.isDirectory()) {
             // 为每个articlesDir目录的目录生成 sidebar 配置
-            sidebar[`/${articlesDir}/${directory}/`] = scanDirectory(categoryPath);
+            sidebar[`/${articlesDir}/${category}/`] = scanDirectory(categoryPath);
             // 递归处理子目录
-            const subDirectories = fs.readdirSync(categoryPath);
-            subDirectories.forEach((subDirectory) => {
-                const subCategoryPath = path.join(categoryPath, subDirectory);
+            const subCategories = fs.readdirSync(categoryPath);
+            subCategories.forEach((subCategory) => {
+                const subCategoryPath = path.join(categoryPath, subCategory);
                 const subStat = fs.statSync(subCategoryPath);
                 if (subStat.isDirectory()) {
-                    sidebar[`/${articlesDir}/${directory}/${subDirectory}/`] = scanDirectory(subCategoryPath);
+                    sidebar[`/${articlesDir}/${category}/${subCategory}/`] = scanDirectory(subCategoryPath);
                 }
             });
         }
