@@ -1,5 +1,5 @@
 import { defineConfig } from 'vitepress'
-import sidebarConfig from './plugins/generate_sidebar.js'
+import sidebarConfig from './plugins/generate_sidebar'
 
 export default defineConfig({
   title: "代码的诗",
