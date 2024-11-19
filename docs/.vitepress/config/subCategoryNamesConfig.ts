@@ -1,6 +1,6 @@
-import { CategoryNamesConfig } from "./SidebarItem";
+import { SubCategoryNamesConfig } from "./types";
 
-export const categoryNamesConfig: CategoryNamesConfig = {
+export const subCategoryNamesConfig: SubCategoryNamesConfig = {
   cs: {
     'algorithms': '数据结构与算法',
   },

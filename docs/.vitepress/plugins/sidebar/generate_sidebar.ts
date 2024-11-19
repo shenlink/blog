@@ -1,23 +1,24 @@
 import fs from 'fs';
 import path from 'path';
-import { SidebarItem, CategoryNames } from './SidebarItem'
-import { Sidebar } from './SidebarItem'
-import { categoryNamesConfig } from './categoryNamesConfig'
-import { categoryOrdersConfig } from './categoryOrdersConfig';
+import { SidebarItem } from './types'
+import { Sidebar } from './types'
+import { SubCategoryNames } from '../../config/types'
+import { subCategoryNamesConfig } from '../../config/subCategoryNamesConfig'
+import { subCategoryOrdersConfig } from '../../config/subCategoryOrdersConfig';
 
 // 递归扫描目录并生成 sidebar
 function generateSidebar(articlesDir: string): Sidebar {
     const sidebar: Sidebar = {};
     // 构建 articlesDir 的绝对路径
-    const baseDir = path.resolve(__dirname, '../../', articlesDir);
+    const baseDir = path.resolve(__dirname, '../../../', articlesDir);
     // 需要跳过的顶级目录列表
     const skipDirs = fs.readdirSync(baseDir);
-    let subDirectoryNames: CategoryNames = {}
+    let subDirectoryNames: SubCategoryNames = {}
     // 扫描目录
     function scanDirectory(dir: string): SidebarItem[] {
         const items: SidebarItem[] = [];
         const files = fs.readdirSync(dir);
-        const categoryOrder = categoryOrdersConfig[path.basename(dir)] || []
+        const categoryOrder = subCategoryOrdersConfig[path.basename(dir)] || []
         let sortedDirectory = files
         if (categoryOrder.length !== 0) {
             sortedDirectory = files.sort((a, b) => {
@@ -87,7 +88,7 @@ function generateSidebar(articlesDir: string): Sidebar {
     directories.forEach((directory) => {
         const categoryPath = path.join(baseDir, directory);
         const stat = fs.statSync(categoryPath);
-        subDirectoryNames = categoryNamesConfig[directory] || []
+        subDirectoryNames = subCategoryNamesConfig[directory] || []
         if (stat.isDirectory()) {
             // 为每个articlesDir目录的目录生成 sidebar 配置
             sidebar[`/${articlesDir}/${directory}/`] = scanDirectory(categoryPath);
