@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitepress'
 import { generateSidebar } from './plugins/sidebar/generate_sidebar'
+import { generateNavbar } from './plugins/navbar/generate_navbar'
 
 export default defineConfig({
   title: "代码的诗",
@@ -21,28 +22,7 @@ export default defineConfig({
     ],
   ],
   themeConfig: {
-    nav: [
-      { text: '首页', link: '/' },
-      {
-        text: '计算机基础',
-        items: [
-          { text: '数据结构与算法', link: '/articles/cs/algorithms/introduction' }
-        ]
-      },
-      {
-        text: '编程之美',
-        items: [
-          { text: '设计模式', link: '/articles/code/design-pattern/introduction' },
-        ]
-      },
-      {
-        text: '博客',
-        items: [
-          { text: 'php', link: '/articles/blog/php/introduction' },
-          { text: 'frontend', link: '/articles/blog/frontend/introduction' }
-        ]
-      }
-    ],
+    nav: generateNavbar('articles'),
     sidebar: generateSidebar('articles'),
     socialLinks: [
       { icon: 'github', link: 'https://github.com/shenlink' }
