@@ -5,3 +5,11 @@ export interface SidebarItem {
     collapsed?: boolean;
     items?: SidebarItem[];
 }
+
+export type Sidebar = { [key: string]: SidebarItem[] };
+
+export type CategoryNamesConfig = { [key: string]: { [key: string]: string } }
+
+export type CategoryOrdersConfig = { [key: string]: string[] }
+
+export type CategoryNames = { [key: string]: string }

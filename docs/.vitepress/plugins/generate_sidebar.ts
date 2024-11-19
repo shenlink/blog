@@ -1,31 +1,60 @@
 import fs from 'fs';
 import path from 'path';
-import { SidebarItem } from './SidebarItem'
+import { SidebarItem, CategoryNames } from './SidebarItem'
+import { Sidebar } from './SidebarItem'
+import { categoryNamesConfig } from './categoryNamesConfig'
+import { categoryOrdersConfig } from './categoryOrdersConfig';
 
 // 递归扫描目录并生成 sidebar
-function generateSidebar(articlesDir: string): { [key: string]: SidebarItem[] } {
-    const sidebar: { [key: string]: SidebarItem[] } = {};
+function generateSidebar(articlesDir: string): Sidebar {
+    const sidebar: Sidebar = {};
     // 构建 articlesDir 的绝对路径
     const baseDir = path.resolve(__dirname, '../../', articlesDir);
     // 需要跳过的顶级目录列表
     const skipDirs = fs.readdirSync(baseDir);
+    let subDirectoryNames: CategoryNames = {}
     // 扫描目录
     function scanDirectory(dir: string): SidebarItem[] {
         const items: SidebarItem[] = [];
         const files = fs.readdirSync(dir);
+        const categoryOrder = categoryOrdersConfig[path.basename(dir)] || []
+        let sortedDirectory = files
+        if (categoryOrder.length !== 0) {
+            sortedDirectory = files.sort((a, b) => {
+                // 检查 a 和 b 是否在 customSortOrder 中
+                const indexA = categoryOrder.indexOf(a);
+                const indexB = categoryOrder.indexOf(b);
+                // 如果 a 和 b 都在 customSortOrder 中，按顺序排序
+                if (indexA !== -1 && indexB !== -1) {
+                    return indexA - indexB;
+                }
+                // 如果 a 和 b 都不在 customSortOrder 中，保持原顺序
+                if (indexA === -1 && indexB === -1) {
+                    return 0;
+                }
+                // 如果 a 在 customSortOrder 中而 b 不在，a 排在前面
+                if (indexA !== -1 && indexB === -1) {
+                    return -1;
+                }
+                // 如果 b 在 customSortOrder 中而 a 不在，b 排在前面
+                if (indexA === -1 && indexB !== -1) {
+                    return 1;
+                }
+                return 0;
+            });
+        }
         // 先收集所有的 .md 文件
         const mdFiles: SidebarItem[] = [];
-        files.forEach((file) => {
+        sortedDirectory.forEach((file) => {
             const filePath = path.join(dir, file);
             // 判断是否是 skipDirs 目录下的 introduction.md 文件，跳过
             const dirName = path.basename(dir);
             if (skipDirs.includes(dirName) && file === 'introduction.md') return;
-
             const stat = fs.statSync(filePath);
             if (stat.isDirectory()) {
                 // 如果是文件夹，递归扫描该文件夹
                 items.push({
-                    text: file,
+                    text: subDirectoryNames[file] || file,
                     collapsed: true,
                     // 递归进入子目录
                     items: scanDirectory(filePath),
@@ -54,22 +83,21 @@ function generateSidebar(articlesDir: string): { [key: string]: SidebarItem[] } 
         return items;
     }
 
-    const categories = fs.readdirSync(baseDir);
-
-    categories.forEach((category) => {
-        const categoryPath = path.join(baseDir, category);
-
+    const directories = fs.readdirSync(baseDir);
+    directories.forEach((directory) => {
+        const categoryPath = path.join(baseDir, directory);
         const stat = fs.statSync(categoryPath);
+        subDirectoryNames = categoryNamesConfig[directory] || []
         if (stat.isDirectory()) {
             // 为每个articlesDir目录的目录生成 sidebar 配置
-            sidebar[`/${articlesDir}/${category}/`] = scanDirectory(categoryPath);
+            sidebar[`/${articlesDir}/${directory}/`] = scanDirectory(categoryPath);
             // 递归处理子目录
-            const subCategoryPaths = fs.readdirSync(categoryPath);
-            subCategoryPaths.forEach((subCategory) => {
-                const subCategoryPath = path.join(categoryPath, subCategory);
+            const subDirectories = fs.readdirSync(categoryPath);
+            subDirectories.forEach((subDirectory) => {
+                const subCategoryPath = path.join(categoryPath, subDirectory);
                 const subStat = fs.statSync(subCategoryPath);
                 if (subStat.isDirectory()) {
-                    sidebar[`/${articlesDir}/${category}/${subCategory}/`] = scanDirectory(subCategoryPath);
+                    sidebar[`/${articlesDir}/${directory}/${subDirectory}/`] = scanDirectory(subCategoryPath);
                 }
             });
         }
@@ -77,4 +105,4 @@ function generateSidebar(articlesDir: string): { [key: string]: SidebarItem[] } 
     return sidebar;
 }
 
-export default generateSidebar;
+export { generateSidebar };
