@@ -4,6 +4,7 @@ import { generateNavbar } from './config/navbar/generate_navbar'
 import { head } from './config/head/headConfig'
 import { socialLinks } from './config/socialLinks/socialLinkConfig'
 import { footer } from './config/footer/footerConfig'
+import { lastUpdated } from './config/lastUpdated/lastUpdatedConfig'
 import path from 'path'
 
 const articlesDir = path.resolve(__dirname, '../', 'articles')
@@ -16,13 +17,7 @@ export default defineConfig({
         sidebar: generateSidebar(articlesDir),
         socialLinks: socialLinks,
         footer: footer,
-        lastUpdated: {
-            text: '最后更新',
-            formatOptions: {
-                dateStyle: 'medium',
-                timeStyle: 'medium'
-            }
-        },
+        lastUpdated: lastUpdated,
         search: {
             provider: 'local'
         },

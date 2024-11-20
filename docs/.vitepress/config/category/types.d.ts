@@ -23,3 +23,8 @@ export type SocialLinks = {
     link: string
     ariaLabel?: string
 }
+
+export type LastUpdatedConfig = {
+    text?: string
+    formatOptions?: Intl.DateTimeFormatOptions & { forceLocale?: boolean }
+  }
