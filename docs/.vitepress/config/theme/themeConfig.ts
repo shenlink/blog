@@ -4,6 +4,7 @@ import { socialLinks } from '../socialLinks/socialLinkConfig'
 import { footer } from '../footer/footerConfig'
 import { lastUpdated } from '../lastUpdated/lastUpdatedConfig'
 import { search } from '../search/searchConfig'
+import { docFooter } from '../docFooter/docFooterConfig'
 import path from 'path'
 import { DefaultTheme } from 'vitepress'
 
@@ -16,4 +17,5 @@ export const themeConfig: DefaultTheme.Config = {
     footer: footer,
     lastUpdated: lastUpdated,
     search: search,
+    docFooter: docFooter,
 }
