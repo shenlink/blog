@@ -1,4 +1,4 @@
-import { SubCategoryNamesConfig } from "./types";
+interface SubCategoryNamesConfig { [key: string]: { [key: string]: string } }
 
 export const subCategoryNamesConfig: SubCategoryNamesConfig = {
     cs: {

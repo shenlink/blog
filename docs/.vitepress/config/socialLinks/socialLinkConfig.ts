@@ -1,5 +1,5 @@
-import { SocialLinks } from "../category/types";
+import { DefaultTheme } from "vitepress"
 
-export const socialLinks: SocialLinks[] = [
+export const socialLinks: DefaultTheme.SocialLink[] = [
     { icon: 'github', link: 'https://github.com/shenlink' }
 ];

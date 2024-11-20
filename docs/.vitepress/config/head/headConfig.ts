@@ -1,6 +1,6 @@
-import { HeadConfig } from "../category/types"
+import { HeadConfig } from 'vitepress'
 
-export const head: HeadConfig = [
+export const head: HeadConfig[] = [
     // 插入百度统计的脚本
     [
         'script',

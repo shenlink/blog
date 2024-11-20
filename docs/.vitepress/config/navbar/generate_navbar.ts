@@ -1,12 +1,16 @@
 import fs from 'fs';
 import path from 'path';
-import { NavItem, NavItemWithLink, NavItems } from './types'
 import { categoryNamesConfig } from '../category/categoryNamesConfig';
 import { subCategoryNamesConfig } from '../category/subCategoryNamesConfig'
-import { categoryOrderConfig } from '../category/categoryOrdersConfig';
+import { categoryOrdersConfig } from '../category/categoryOrdersConfig';
 import { subCategoryOrdersConfig } from '../category/subCategoryOrdersConfig';
+import { DefaultTheme } from 'vitepress';
 
-function generateNavbar(articlesDir: string): Array<NavItem> {
+type NavItem = DefaultTheme.NavItem
+type NavItemWithLink = DefaultTheme.NavItemWithLink
+type NavItems = { [key: string]: NavItem }
+
+function generateNavbar(articlesDir: string): NavItem[] {
     const articles = path.basename(articlesDir)
     const nav: NavItem[] = [];
     nav.push({ text: '首页', link: '/' });
@@ -59,11 +63,12 @@ function generateNavbar(articlesDir: string): Array<NavItem> {
     });
 
     // 排序 nav，根据 categoryOrderConfig 顺序
-    categoryOrderConfig.forEach((folder) => {
+    categoryOrdersConfig.forEach((folder) => {
         if (items[folder]) {
             nav.push(items[folder]);
         }
     });
+    console.log(items)
 
     return nav;
 }

@@ -1,1 +1,3 @@
-export const categoryOrderConfig = ['cs', 'code', 'blog'];
+type CategoryOrdersConfig = string[]
+
+export const categoryOrdersConfig: CategoryOrdersConfig = ['cs', 'code', 'blog'];

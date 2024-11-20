@@ -1,10 +1,12 @@
 import fs from 'fs';
 import path from 'path';
-import { SidebarItem } from './types'
-import { Sidebar } from './types'
-import { SubCategoryNames } from '../category/types'
 import { subCategoryNamesConfig } from '../category/subCategoryNamesConfig'
 import { subCategoryOrdersConfig } from '../category/subCategoryOrdersConfig';
+import { DefaultTheme } from 'vitepress';
+
+type Sidebar = DefaultTheme.Sidebar
+type SidebarItem = DefaultTheme.SidebarItem
+type SubCategoryNames = { [key: string]: string }
 
 // 递归扫描目录并生成 sidebar
 function generateSidebar(articlesDir: string): Sidebar {
@@ -70,7 +72,7 @@ function generateSidebar(articlesDir: string): Sidebar {
         });
 
         // 将 introduction.md 文件放在最前面
-        const introIndex = mdFiles.findIndex(file => file.text.toLowerCase() === 'introduction');
+        const introIndex = mdFiles.findIndex(file => file.text && file.text.toLowerCase() === 'introduction');
         if (introIndex !== -1) {
             // 找到并移除 introduction.md
             const introFile = mdFiles.splice(introIndex, 1)[0];
