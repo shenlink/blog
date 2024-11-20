@@ -16,3 +16,10 @@ export type FooterConfig = {
     message?: string
     copyright?: string
 }
+
+type SocialLinkIcon = string | { svg: string }
+export type SocialLinks = {
+    icon: SocialLinkIcon
+    link: string
+    ariaLabel?: string
+}

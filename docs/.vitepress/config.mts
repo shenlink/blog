@@ -2,6 +2,7 @@ import { defineConfig } from 'vitepress'
 import { generateSidebar } from './config/sidebar/generate_sidebar'
 import { generateNavbar } from './config/navbar/generate_navbar'
 import { head } from './config/head/headConfig'
+import { socialLinks } from './config/socialLinks/socialLinkConfig'
 import { footer } from './config/footer/footerConfig'
 import path from 'path'
 
@@ -13,9 +14,7 @@ export default defineConfig({
     themeConfig: {
         nav: generateNavbar(articlesDir),
         sidebar: generateSidebar(articlesDir),
-        socialLinks: [
-            { icon: 'github', link: 'https://github.com/shenlink' }
-        ],
+        socialLinks: socialLinks,
         footer: footer,
         lastUpdated: {
             text: '最后更新',
