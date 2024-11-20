@@ -2,6 +2,7 @@ import { defineConfig } from 'vitepress'
 import { generateSidebar } from './config/sidebar/generate_sidebar'
 import { generateNavbar } from './config/navbar/generate_navbar'
 import { head } from './config/head/headConfig'
+import { footer } from './config/footer/footerConfig'
 import path from 'path'
 
 const articlesDir = path.resolve(__dirname, '../', 'articles')
@@ -15,10 +16,7 @@ export default defineConfig({
         socialLinks: [
             { icon: 'github', link: 'https://github.com/shenlink' }
         ],
-        footer: {
-            message: '<a href="https://beian.miit.gov.cn/" style="text-decoration: none" target="_blank">粤ICP备2024331772号</a>',
-            copyright: 'Copyright © 2024-present <a href="https://github.com/shenlink">shenlink</a>'
-        },
+        footer: footer,
         lastUpdated: {
             text: '最后更新',
             formatOptions: {
