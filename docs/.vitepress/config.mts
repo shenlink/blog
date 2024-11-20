@@ -25,6 +25,9 @@ export default defineConfig({
                 dateStyle: 'medium',
                 timeStyle: 'medium'
             }
-        }
+        },
+        search: {
+            provider: 'local'
+        },
     }
 })
