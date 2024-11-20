@@ -1,28 +1,14 @@
 import { defineConfig } from 'vitepress'
 import { generateSidebar } from './plugins/sidebar/generate_sidebar'
 import { generateNavbar } from './plugins/navbar/generate_navbar'
+import { head } from './plugins/head/config'
 import path from 'path'
 
 const articlesDir = path.resolve(__dirname, '../', 'articles')
 export default defineConfig({
     title: "代码的诗",
     description: "分享编程知识",
-    head: [
-        // 插入百度统计的脚本
-        [
-            'script',
-            {},
-            `
-        var _hmt = _hmt || [];
-        (function() {
-          var hm = document.createElement("script");
-          hm.src = "https://hm.baidu.com/hm.js?9c2fdd102f0a62fbd1b5b9195edd14ed";
-          var s = document.getElementsByTagName("script")[0];
-          s.parentNode.insertBefore(hm, s);
-        })();
-      `,
-        ],
-    ],
+    head: head,
     themeConfig: {
         nav: generateNavbar(articlesDir),
         sidebar: generateSidebar(articlesDir),
