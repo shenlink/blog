@@ -5,6 +5,7 @@ import { head } from './config/head/headConfig'
 import { socialLinks } from './config/socialLinks/socialLinkConfig'
 import { footer } from './config/footer/footerConfig'
 import { lastUpdated } from './config/lastUpdated/lastUpdatedConfig'
+import { search } from './config/search/searchConfig'
 import path from 'path'
 
 const articlesDir = path.resolve(__dirname, '../', 'articles')
@@ -18,8 +19,6 @@ export default defineConfig({
         socialLinks: socialLinks,
         footer: footer,
         lastUpdated: lastUpdated,
-        search: {
-            provider: 'local'
-        },
+        search: search,
     }
 })
