@@ -7,13 +7,13 @@ import { categoryOrderConfig } from '../../config/categoryOrdersConfig';
 import { subCategoryOrdersConfig } from '../../config/subCategoryOrdersConfig';
 
 function generateNavbar(articlesDir: string): Array<NavItem> {
-    const baseDir = path.resolve(__dirname, '../../../', articlesDir);
+    const articles = path.basename(articlesDir)
     const nav: NavItem[] = [];
     nav.push({ text: '首页', link: '/' });
-    const categories = fs.readdirSync(baseDir);
+    const categories = fs.readdirSync(articlesDir);
     const items: NavItems = {};
     categories.forEach((file) => {
-        const filePath = path.join(baseDir, file);
+        const filePath = path.join(articlesDir, file);
         const subCategories = fs.readdirSync(filePath);
         const subItems: NavItemWithLink[] = [];
         const subCategoryOrders = subCategoryOrdersConfig[file] || []
@@ -47,7 +47,7 @@ function generateNavbar(articlesDir: string): Array<NavItem> {
             const text = subCategoryNames[item] || item;
             subItems.push({
                 text: text,
-                link: `${articlesDir}/${file}/${item}/introduction`,
+                link: `${articles}/${file}/${item}/introduction`,
             });
         });
 

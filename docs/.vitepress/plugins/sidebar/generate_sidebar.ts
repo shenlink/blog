@@ -8,10 +8,9 @@ import { subCategoryOrdersConfig } from '../../config/subCategoryOrdersConfig';
 
 // 递归扫描目录并生成 sidebar
 function generateSidebar(articlesDir: string): Sidebar {
+    const articles = path.basename(articlesDir)
     const sidebar: Sidebar = {};
-    // 构建 articlesDir 的绝对路径
-    const baseDir = path.resolve(__dirname, '../../../', articlesDir);
-    const categories = fs.readdirSync(baseDir);
+    const categories = fs.readdirSync(articlesDir);
     // 需要跳过的顶级目录列表
     const skipDirs = categories;
     let subCategoryNames: SubCategoryNames = {}
@@ -65,7 +64,7 @@ function generateSidebar(articlesDir: string): Sidebar {
                 // 如果是Markdown文件，添加到列表
                 mdFiles.push({
                     text: file.replace('.md', ''),
-                    link: `/${articlesDir}/${dir.replace(baseDir, '').replace(/\\/g, '/').replace(/^\//, '').replace(/\/$/, '')}/${file.replace('.md', '')}`,
+                    link: `/${articles}/${dir.replace(articlesDir, '').replace(/\\/g, '/').replace(/^\//, '').replace(/\/$/, '')}/${file.replace('.md', '')}`,
                 });
             }
         });
@@ -86,19 +85,19 @@ function generateSidebar(articlesDir: string): Sidebar {
     }
 
     categories.forEach((category) => {
-        const categoryPath = path.join(baseDir, category);
+        const categoryPath = path.join(articlesDir, category);
         const stat = fs.statSync(categoryPath);
         subCategoryNames = subCategoryNamesConfig[category] || []
         if (stat.isDirectory()) {
             // 为每个articlesDir目录的目录生成 sidebar 配置
-            sidebar[`/${articlesDir}/${category}/`] = scanDirectory(categoryPath);
+            sidebar[`/${articles}/${category}/`] = scanDirectory(categoryPath);
             // 递归处理子目录
             const subCategories = fs.readdirSync(categoryPath);
             subCategories.forEach((subCategory) => {
                 const subCategoryPath = path.join(categoryPath, subCategory);
                 const subStat = fs.statSync(subCategoryPath);
                 if (subStat.isDirectory()) {
-                    sidebar[`/${articlesDir}/${category}/${subCategory}/`] = scanDirectory(subCategoryPath);
+                    sidebar[`/${articles}/${category}/${subCategory}/`] = scanDirectory(subCategoryPath);
                 }
             });
         }
