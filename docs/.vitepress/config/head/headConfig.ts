@@ -1,4 +1,4 @@
-import { HeadConfig } from "../../config/types"
+import { HeadConfig } from "../category/types"
 
 export const head: HeadConfig = [
     // 插入百度统计的脚本

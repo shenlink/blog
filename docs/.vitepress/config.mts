@@ -1,7 +1,7 @@
 import { defineConfig } from 'vitepress'
-import { generateSidebar } from './plugins/sidebar/generate_sidebar'
-import { generateNavbar } from './plugins/navbar/generate_navbar'
-import { head } from './plugins/head/config'
+import { generateSidebar } from './config/sidebar/generate_sidebar'
+import { generateNavbar } from './config/navbar/generate_navbar'
+import { head } from './config/head/headConfig'
 import path from 'path'
 
 const articlesDir = path.resolve(__dirname, '../', 'articles')
