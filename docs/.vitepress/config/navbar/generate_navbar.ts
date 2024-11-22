@@ -68,7 +68,6 @@ function generateNavbar(articlesDir: string): NavItem[] {
             nav.push(items[folder]);
         }
     });
-    console.log(items)
 
     return nav;
 }
