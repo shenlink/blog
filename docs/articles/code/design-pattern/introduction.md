@@ -1,5 +1,7 @@
 ---
 outline: deep
+title: introduction
+url: e826789d1d3d8818a3a04f5a2d577837
 ---
 
 # 设计模式介绍

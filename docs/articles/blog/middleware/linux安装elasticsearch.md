@@ -1,5 +1,7 @@
 ---
 outline: deep
+title: linux安装elasticsearch
+url: c422667a3a824940aa81e6dd1ac2f7c9
 ---
 
 # linux安装elasticsearch

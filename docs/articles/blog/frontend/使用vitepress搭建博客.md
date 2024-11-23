@@ -1,5 +1,7 @@
 ---
 outline: deep
+title: 使用vitepress搭建博客
+url: 1fe89e3706fbfe66fe0157ca649b3373
 ---
 
 # 使用vitepress搭建博客

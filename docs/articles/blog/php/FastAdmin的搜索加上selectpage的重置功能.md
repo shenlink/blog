@@ -1,5 +1,7 @@
 ---
 outline: deep
+title: FastAdmin的搜索加上selectpage的重置功能
+url: ff2cad1b7a97182a056a95b6c5a4c17c
 ---
 
 # FastAdmin的搜索加上selectpage的重置功能
