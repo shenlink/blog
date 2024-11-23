@@ -5,10 +5,8 @@ import { footer } from '../footer/footerConfig'
 import { lastUpdated } from '../lastUpdated/lastUpdatedConfig'
 import { search } from '../search/searchConfig'
 import { docFooter } from '../docFooter/docFooterConfig'
-import path from 'path'
 import { DefaultTheme } from 'vitepress'
-
-const articlesDir = path.resolve(__dirname, '../../../', 'articles')
+import { articlesDir, outlineTitle, lightModeSwitchTitle, darkModeSwitchTitle } from '../extra/config'
 
 export const themeConfig: DefaultTheme.Config = {
     nav: generateNavbar(articlesDir),
@@ -18,7 +16,7 @@ export const themeConfig: DefaultTheme.Config = {
     lastUpdated: lastUpdated,
     search: search,
     docFooter: docFooter,
-    outlineTitle: "本页目录",
-    lightModeSwitchTitle: '切换到浅色模式',
-    darkModeSwitchTitle: '切换到深色模式',
+    outlineTitle: outlineTitle,
+    lightModeSwitchTitle: lightModeSwitchTitle,
+    darkModeSwitchTitle: darkModeSwitchTitle,
 }
