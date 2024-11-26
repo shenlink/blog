@@ -3,6 +3,7 @@ import path from 'path';
 import { subCategoryNamesConfig } from '../category/subCategoryNamesConfig'
 import { subCategoryOrdersConfig } from '../category/subCategoryOrdersConfig';
 import { DefaultTheme } from 'vitepress';
+import matter from 'gray-matter';
 
 type Sidebar = DefaultTheme.Sidebar
 type SidebarItem = DefaultTheme.SidebarItem
@@ -63,10 +64,13 @@ function generateSidebar(articlesDir: string): Sidebar {
                     items: scanDirectory(filePath),
                 });
             } else if (file.endsWith('.md')) {
+                const fileContent = fs.readFileSync(filePath, 'utf-8');
+                const { data, content } = matter(fileContent);
+                const url = data.url;
                 // 如果是Markdown文件，添加到列表
                 mdFiles.push({
                     text: file.replace('.md', ''),
-                    link: `/${articles}/${dir.replace(articlesDir, '').replace(/\\/g, '/').replace(/^\//, '').replace(/\/$/, '')}/${file.replace('.md', '')}`,
+                    link: `/${articles}/${dir.replace(articlesDir, '').replace(/\\/g, '/').replace(/^\//, '').replace(/\/$/, '')}/${url}`,
                 });
             }
         });

@@ -5,6 +5,7 @@ import { subCategoryNamesConfig } from '../category/subCategoryNamesConfig'
 import { categoryOrdersConfig } from '../category/categoryOrdersConfig';
 import { subCategoryOrdersConfig } from '../category/subCategoryOrdersConfig';
 import { DefaultTheme } from 'vitepress';
+import matter from 'gray-matter';
 
 type NavItem = DefaultTheme.NavItem
 type NavItemWithLink = DefaultTheme.NavItemWithLink
@@ -49,9 +50,12 @@ function generateNavbar(articlesDir: string): NavItem[] {
                 return;
             }
             const text = subCategoryNames[item] || item;
+            const fileContent = fs.readFileSync(path.join(filePath, item, 'introduction.md'), 'utf-8');
+            const { data, content } = matter(fileContent);
+            const url = data.url;
             subItems.push({
                 text: text,
-                link: `${articles}/${file}/${item}/introduction`,
+                link: `${articles}/${file}/${item}/${url}`,
             });
         });
 
