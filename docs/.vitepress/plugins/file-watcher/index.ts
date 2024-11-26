@@ -35,7 +35,6 @@ function fileWatcher(directoryToWatch: string) {
             });
             // 当文件被添加时触发
             watcher.on('add', async (filePath: string) => {
-                console.log('add')
                 if (path.extname(filePath) !== '.md') {
                     return;
                 }
