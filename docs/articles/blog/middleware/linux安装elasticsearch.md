@@ -10,11 +10,6 @@ updatetime: 2024-11-27 00:18:32
 
 ## 下载和解压
 
-elasticsearch 的下载地址如下：
-```url
-https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.12.2-linux-x86_64.tar.gz
-```
-
 在 linux 中选择一个合适的目录，下载 elasticsearch 压缩包
 ```shell
 wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.12.2-linux-x86_64.tar.gz
@@ -50,7 +45,7 @@ visudo
 ```
 
 在root ALL=(ALL) ALL一行下面添加elastic ALL=(ALL) ALL
-```conf
+```txt
 root    ALL=(ALL)       ALL
 elastic   ALL=(ALL)       ALL
 ```
@@ -61,7 +56,7 @@ vim /etc/sysctl.conf
 ```
 
 在最后一行加上
-```conf
+```ini
 vm.max_map_count=262144
 ```
 
@@ -83,7 +78,7 @@ cd elasticsearch-8.12.2
 ```
 
 在 config 目录下面的 jvm.options 文件里面修改内存的配置
-```options
+```txt
 -Xms4g
 -Xmx4g
 ```

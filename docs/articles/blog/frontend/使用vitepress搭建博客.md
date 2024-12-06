@@ -19,7 +19,7 @@ updatetime: 2024-11-27 00:18:32
 
 ### 安装vitepress依赖
 
-```npm
+```shell
 npm add -D vitepress
 ```
 
@@ -27,7 +27,7 @@ npm add -D vitepress
 
 VitePress 附带一个命令行设置向导，可以帮助你构建一个基本项目。安装后，通过运行以下命令启动向导：
 
-```npm
+```shell
 npx vitepress init
 ```
 
@@ -244,14 +244,14 @@ export default generateSidebar;
 
 运行命令，生成最终的发布版文件
 
-```npm
+```shell
 npm run docs:build
 ```
 
 编译后的发布版文件在./docs/.vitepress/dist/目录下面
 
 nginx配置文件参考如下：
-```conf
+```nginx
 server
 {
     listen 80;
