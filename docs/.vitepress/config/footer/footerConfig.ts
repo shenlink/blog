@@ -8,9 +8,9 @@ export const footer: DefaultTheme.Footer = {
   </a>
   <br />
   <span style="display: inline-flex; justify-content: center; align-items: center; margin-left: 8px;">
-    <img src="/images/beian.png" alt="粤公网安备44060502003783" style="margin-right: 8px; width: 16px; height: 16px;">
+    <img src="/images/beian.png" alt="粤公网安备44060502003783号" style="margin-right: 8px; width: 16px; height: 16px;">
     <a href="https://beian.mps.gov.cn/#/query/webSearch?code=44060502003783" style="text-decoration: none" rel="noreferrer" target="_blank">
-      粤公网安备44060502003783
+      粤公网安备44060502003783号
     </a>
   </span>
   </span>`,
