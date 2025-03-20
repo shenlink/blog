@@ -1,0 +1,70 @@
+---
+outline: deep
+title: 安装和配置 Composer
+url: 124d12142d76066132204dc7ab869101
+createtime: 2024-11-12T12:46:31.000Z
+updatetime: 2024-11-23T21:39:19.000Z
+---
+
+# 安装和配置 Composer
+
+## 安装 Composer
+### 确认已经安装 php
+安装前请务必确保已经正确安装了 PHP。打开命令行窗口并执行 php -v 查看是否正确输出版本号。
+
+### 下载 Composer 安装文件
+打开命令行并依次执行下列命令安装最新版本的 Composer：
+```shell
+php -r "copy('https://install.phpcomposer.com/installer', 'composer-setup.php');"
+```
+可能出现错误：
+```txt
+Warning: copy(): Unable to find the wrapper "https" - did you forget to enable it when you configured PHP? in Command line code on line 1
+```
+
+解决方法：
+这是因为缺少openssl扩展，需要安装openssl扩展。
+安装成功后，在php的安装目录的php.ini的[PHP]块下面加上：
+```ini
+extension_dir=/path/to/php/ext
+extension=php_openssl
+```
+
+### 生成 composer.phar 文件
+执行以下命令，执行安装过程，生成了一个composer.phar文件：
+```shell
+php composer-setup.php
+```
+
+### 删除 composer-setup.php 文件
+执行以下命令删除composer-setup.php文件：
+```shell
+php -r "unlink('composer-setup.php');"
+```
+
+### 部署 composer 可执行文件
+windows下：
+新建一个composer.bat文件，写入以下代码：
+```bat
+@php "%~dp0composer.phar" %*
+```
+把composer.phar和composer.bat文件放在php的安装目录，也就是php可执行文件所在的目录。
+
+linux下：
+```shell
+sudo mv composer.phar /usr/local/bin/composer
+```
+
+### 执行以下命令，查看是否安装成功：
+```shell
+composer -v
+```
+如果显示了 Composer 的版本号，则表示安装成功。
+
+
+## 配置 Composer
+
+### 配置镜像源为阿里云源
+```shell
+composer config -g repo.packagist composer https://mirrors.aliyun.com/composer/
+```
