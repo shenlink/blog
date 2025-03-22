@@ -1,11 +1,10 @@
 import chokidar from 'chokidar';
 import { ViteDevServer } from 'vite';
-import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
 import os from 'os'
-import { apiUrl } from './config'
 import matter from 'gray-matter';
+import crypto from 'crypto';
 
 // 修改文件的frontmatter的title
 function updateTitle(filePath: string, fileContent: string): void {
@@ -38,9 +37,6 @@ function fileWatcher(directoryToWatch: string) {
                 if (path.extname(filePath) !== '.md') {
                     return;
                 }
-                if (null === apiUrl) {
-                    return;
-                }
                 const fileContent = fs.readFileSync(filePath, 'utf-8');
                 // 文件有内容，是修改文件名称
                 if (fileContent.trim().length > 0) {
@@ -48,8 +44,7 @@ function fileWatcher(directoryToWatch: string) {
                     return;
                 }
                 try {
-                    const response = await axios.get(apiUrl);
-                    const { url } = response.data;
+                    const url = crypto.createHash('md5').update(Date.now().toString()).digest('hex');
                     const title = path.basename(filePath, path.extname(filePath));
                     const frontmatter = `---${os.EOL}outline: deep${os.EOL}title: ${title}${os.EOL}url: ${url}${os.EOL}---${os.EOL}`;
                     fs.writeFileSync(filePath, frontmatter, 'utf-8');
