@@ -21,6 +21,18 @@ function updateTitle(filePath: string, fileContent: string): void {
     fs.writeFileSync(filePath, newContent, 'utf8');
 }
 
+// 获取当前时间，格式为 YYYY-MM-DD HH:mm:ss
+function getDatetimeString(): string {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
 // 文件监听
 function fileWatcher(directoryToWatch: string) {
     return {
@@ -46,7 +58,8 @@ function fileWatcher(directoryToWatch: string) {
                 try {
                     const url = crypto.createHash('md5').update(Date.now().toString()).digest('hex');
                     const title = path.basename(filePath, path.extname(filePath));
-                    const frontmatter = `---${os.EOL}outline: deep${os.EOL}title: ${title}${os.EOL}url: ${url}${os.EOL}---${os.EOL}`;
+                    const datetime = getDatetimeString();
+                    const frontmatter = `---${os.EOL}outline: deep${os.EOL}title: ${title}${os.EOL}url: ${url}${os.EOL}createtime: ${datetime}${os.EOL}updatetime: ${datetime}${os.EOL}---${os.EOL}`;
                     fs.writeFileSync(filePath, frontmatter, 'utf-8');
                 } catch (error) {
                     console.error(`获取 URL 或写入文件时出错: ${error.message}`);
