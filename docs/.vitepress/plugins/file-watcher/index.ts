@@ -3,12 +3,28 @@ import { ViteDevServer } from 'vite';
 import fs from 'fs';
 import path from 'path';
 import os from 'os'
-import matter from 'gray-matter';
 import crypto from 'crypto';
 
 // 修改文件的frontmatter的title
 function updateTitle(filePath: string, fileContent: string): void {
-    const { data, content } = matter(fileContent);
+    // 提取 frontmatter 和 content
+    const frontmatterMatch = fileContent.trim().match(/^---[\r\n]([\s\S]*?)[\r\n]---/);
+    if (!frontmatterMatch) {
+        return; // 没有 frontmatter，直接返回
+    }
+
+    const frontmatterText = frontmatterMatch[1]; // 获取 frontmatter 内容
+    const content = fileContent.substring(frontmatterMatch[0].length).trimStart(); // 剩余内容
+
+    // 解析 frontmatter 字段为对象
+    const data: Record<string, any> = {};
+    frontmatterText.split(/[\r\n]+/).forEach(line => {
+        const [key, ...rest] = line.split(':').map(s => s.trim());
+        if (key && rest.length > 0) {
+            data[key] = rest.join(':').trim();
+        }
+    });
+
     if (!data.title) {
         return;
     }
@@ -17,7 +33,8 @@ function updateTitle(filePath: string, fileContent: string): void {
         return;
     }
     data.title = newTitle;
-    const newContent = matter.stringify(content, data);
+    data.updatetime = getDatetimeString();
+    const newContent = `---${os.EOL}outline: ${data.outline || ''}${os.EOL}title: ${data.title}${os.EOL}url: ${data.url || ''}${os.EOL}createtime: ${data.createtime || ''}${os.EOL}updatetime: ${data.updatetime}${os.EOL}---${os.EOL}${os.EOL}` + content;
     fs.writeFileSync(filePath, newContent, 'utf8');
 }
 
