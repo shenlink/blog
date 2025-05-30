@@ -25,6 +25,25 @@ function getDescriptionName(directoryPath: string, itemName?: string): string {
     return itemName || path.basename(directoryPath);
 }
 
+// 新增函数：从 description.json 文件中读取 introduction 属性
+function getDescriptionIntroduction(directoryPath: string, itemName?: string): string {
+    let descriptionPath = path.join(directoryPath, 'description.json');
+    if (itemName) {
+        descriptionPath = path.join(directoryPath, itemName, 'description.json');
+    }
+
+    if (fs.existsSync(descriptionPath)) {
+        try {
+            const description = JSON.parse(fs.readFileSync(descriptionPath, 'utf-8'));
+            return description.introduction;
+        } catch (error) {
+            console.error(`Failed to parse description.json for ${itemName || directoryPath}:`, error);
+        }
+    }
+
+    return itemName || path.basename(directoryPath);
+}
+
 // 递归扫描目录并生成 sidebar
 function generateSidebar(articlesDir: string): Sidebar {
     const articles = path.basename(articlesDir)
@@ -81,7 +100,15 @@ function generateSidebar(articlesDir: string): Sidebar {
 
         // 将所有文件添加到 items 数组
         items.push(...mdFiles);
-
+        // 将 introduction.md 文件放在最前面
+        const introIndex = items.findIndex(file => file.text && file.text.includes('introduction'));
+        if (introIndex !== -1) {
+            // 找到并移除 introduction.md
+            const introFile = items.splice(introIndex, 1)[0];
+            introFile.text = getDescriptionIntroduction(dir)
+            // 将 introduction.md 放在最前面
+            items.unshift(introFile);
+        }
         return items;
     }
 
