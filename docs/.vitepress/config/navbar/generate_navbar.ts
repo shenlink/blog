@@ -1,76 +1,86 @@
 import fs from 'fs';
 import path from 'path';
-import { categoryNamesConfig } from '../category/categoryNamesConfig';
-import { subCategoryNamesConfig } from '../category/subCategoryNamesConfig'
-import { categoryOrdersConfig } from '../category/categoryOrdersConfig';
-import { subCategoryOrdersConfig } from '../category/subCategoryOrdersConfig';
 import { DefaultTheme } from 'vitepress';
-import matter from 'gray-matter';
 
 type NavItem = DefaultTheme.NavItem
 type NavItemWithLink = DefaultTheme.NavItemWithLink
-type NavItems = { [key: string]: NavItem }
+
+// 新增函数：从 description.json 文件中读取 name 属性
+function getDescriptionName(directoryPath: string, itemName?: string): string {
+    let descriptionPath = path.join(directoryPath, 'description.json');
+    if (itemName) {
+        descriptionPath = path.join(directoryPath, itemName, 'description.json');
+    }
+
+    if (fs.existsSync(descriptionPath)) {
+        try {
+            const description = JSON.parse(fs.readFileSync(descriptionPath, 'utf-8'));
+            return description.name || '';
+        } catch (error) {
+            console.error(`Failed to parse description.json for ${itemName || directoryPath}:`, error);
+        }
+    }
+
+    return itemName || path.basename(directoryPath);
+}
 
 function generateNavbar(articlesDir: string): NavItem[] {
     const articles = path.basename(articlesDir)
     const nav: NavItem[] = [];
     nav.push({ text: '首页', link: '/' });
-    const categories = fs.readdirSync(articlesDir);
-    const items: NavItems = {};
+    const categories = fs.readdirSync(articlesDir).sort((a, b) => {
+        const numA = parseInt(a.match(/^\d+/)?.[0] || '0', 10);
+        const numB = parseInt(b.match(/^\d+/)?.[0] || '0', 10);
+        return numA - numB;
+    });
     categories.forEach((file) => {
         const filePath = path.join(articlesDir, file);
         const subCategories = fs.readdirSync(filePath);
         const subItems: NavItemWithLink[] = [];
-        const subCategoryOrders = subCategoryOrdersConfig[file] || []
         const sortedSubCategories = subCategories.sort((a, b) => {
-            // 检查 a 和 b 是否在 subCategoryOrders 中
-            const indexA = subCategoryOrders.indexOf(a);
-            const indexB = subCategoryOrders.indexOf(b);
-            // 如果 a 和 b 都在 subCategoryOrders 中，按顺序排序
-            if (indexA !== -1 && indexB !== -1) {
-                return indexA - indexB;
-            }
-            // 如果 a 和 b 都不在 subCategoryOrders 中，保持原顺序
-            if (indexA === -1 && indexB === -1) {
-                return 0;  // 返回 0 保证它们的相对顺序不变
-            }
-            // 如果 a 在 subCategoryOrders 中而 b 不在，a 排在前面
-            if (indexA !== -1 && indexB === -1) {
-                return -1;
-            }
-            // 如果 b 在 subCategoryOrders 中而 a 不在，b 排在前面
-            if (indexA === -1 && indexB !== -1) {
-                return 1;
-            }
-            return 0;
+            // 提取目录名称中的数字部分
+            const extractNumber = (str: string): number => {
+                const match = str.match(/^\d+/);
+                return match ? parseInt(match[0], 10) : Infinity;
+            };
+
+            const numA = extractNumber(a);
+            const numB = extractNumber(b);
+
+            // 按数字大小排序
+            return numA - numB;
         });
-        const subCategoryNames = subCategoryNamesConfig[file]
         sortedSubCategories.forEach((item) => {
-            if (item === 'introduction.md') {
+            if (item.includes('introduction.md') || item === 'description.json') {
                 return;
             }
-            const text = subCategoryNames[item] || item;
-            const fileContent = fs.readFileSync(path.join(filePath, item, 'introduction.md'), 'utf-8');
-            const { data, content } = matter(fileContent);
-            const url = data.url;
+
+            // 修改：使用新的 getDescriptionName 函数
+            const text = getDescriptionName(filePath, item);
+            // 修改：查找并解析 introduction.md 文件
+            const itemPath = path.join(filePath, item);
+            const files = fs.readdirSync(itemPath).filter(f => f.includes('introduction.md'));
+            if (files.length === 0) {
+                return;
+            }
+            const introductionFile = files[0];
+            const match = introductionFile.match(/^(\d+)\.introduction\.md$/);
+            if (!match || !match[1]) {
+                return;
+            }
+            const url = `/${match[1]}`;
             subItems.push({
                 text: text,
-                link: `${articles}/${file}/${item}/${url}`,
+                link: `${articles}/${file.replace(/^\d+\./, '')}/${item.replace(/^\d+\./, '')}/${url}`,
             });
         });
 
-        const text = categoryNamesConfig[file] || file;
-        items[file] = {
+        // 修改：使用新的 getDescriptionName 函数
+        const text = getDescriptionName(filePath);
+        nav.push({
             text: text,
             items: subItems,
-        };
-    });
-
-    // 排序 nav，根据 categoryOrderConfig 顺序
-    categoryOrdersConfig.forEach((folder) => {
-        if (items[folder]) {
-            nav.push(items[folder]);
-        }
+        });
     });
 
     return nav;

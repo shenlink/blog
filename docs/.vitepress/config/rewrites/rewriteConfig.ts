@@ -1,6 +1,6 @@
 
 import fs from 'fs';
-import path from 'path';
+import path, { dirname } from 'path';
 import matter from 'gray-matter';
 import { articlesDir } from '../extra/config';
 
@@ -19,7 +19,7 @@ function generateRewriteConfig(): Rewrites {
             const filePath = path.join(dir, file);
             // 判断是否是 skipDirs 目录下的 introduction.md 文件，跳过
             const dirName = path.basename(dir);
-            if (skipDirs.includes(dirName) && file === 'introduction.md') {
+            if (skipDirs.includes(dirName)) {
                 return;
             }
             const stat = fs.statSync(filePath);
@@ -29,9 +29,11 @@ function generateRewriteConfig(): Rewrites {
                 const fileContent = fs.readFileSync(filePath, 'utf-8');
                 const { data, content } = matter(fileContent);
                 const url = data.url;
-                const prefixPath = `${articles}/${dir.replace(articlesDir, '').replace(/\\/g, '/').replace(/^\//, '').replace(/\/$/, '')}`;
-                const key = `${prefixPath}/${file}`;
-                const value = `${prefixPath}/${url}.md`;
+                const prefixKeyPath = `${articles}/${dir.replace(articlesDir, '').replace(/\\/g, '/').replace(/^\//, '').replace(/\/$/, '')}`;
+                const prefixValuePath = `${articles}/${dir.replace(articlesDir, '').split('\\')
+                    .map(part => part.replace(/^\d+\./, '')).join('\\').replace(/\\/g, '/').replace(/^\//, '').replace(/\/$/, '')}`;
+                const key = `${prefixKeyPath}/${file}`;
+                const value = `${prefixValuePath}/${url}.md`;
                 rewrites[key] = value;
             }
         });
@@ -48,6 +50,21 @@ function generateRewriteConfig(): Rewrites {
                 const subStat = fs.statSync(subCategoryPath);
                 if (subStat.isDirectory()) {
                     scanDirectory(subCategoryPath);
+                } else {
+                    const extractNumber = (str: string): number => {
+                        const match = str.match(/^\d+/);
+                        return match ? parseInt(match[0], 10) : Infinity;
+                    };
+                    if (subCategoryPath.includes('introduction.md')) {
+                        // 获取到文件名开头的数字
+                        const url = extractNumber(subCategory);
+                        const prefixKeyPath = `${articles}/${subCategoryPath.replace(articlesDir, '').replace(/\\/g, '/').replace(/^\//, '').replace(/\/$/, '')}`;
+                        const dir = path.dirname(subCategoryPath.replace(articlesDir, '')).split(path.sep).map(part => part.replace(/^\d+\./, ''));
+                        const prefixValuePath = `${articles}/${path.join(...dir).replace(/\\/g, '/').replace(/^\//, '').replace(/\/$/, '')}`;
+                        const key = `${prefixKeyPath}`;
+                        const value = `${prefixValuePath}/${url}.md`;
+                        rewrites[key] = value;
+                    }
                 }
             });
         }
