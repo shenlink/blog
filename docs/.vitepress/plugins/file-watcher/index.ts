@@ -3,10 +3,9 @@ import { ViteDevServer } from 'vite';
 import fs from 'fs';
 import path from 'path';
 import os from 'os'
-import crypto from 'crypto';
 
-// 修改文件的frontmatter的title
-function updateTitle(filePath: string, fileContent: string): void {
+// 修改文件的frontmatter
+function updateFrontmatter(filePath: string, fileContent: string): void {
     // 提取 frontmatter 和 content
     const frontmatterMatch = fileContent.trim().match(/^---[\r\n]([\s\S]*?)[\r\n]---/);
     if (!frontmatterMatch) {
@@ -28,10 +27,21 @@ function updateTitle(filePath: string, fileContent: string): void {
     if (!data.title) {
         return;
     }
-    const newTitle = path.basename(filePath, path.extname(filePath));
+    const fileName = path.basename(filePath, path.extname(filePath));
+    let newTitle = fileName.replace(/^\d+/, '').replace(/\./g, '');
+    if (newTitle.includes('introduction')) {
+        newTitle = getTitleFromDescriptionFile(filePath);
+    }
     if (newTitle === data.title) {
         return;
     }
+    const urlMatch = fileName.match(/^\d+/);
+    const url = urlMatch ? urlMatch[0] : -1;
+    if (url === -1) {
+        console.log('获取文件的 url 失败')
+        return;
+    }
+    data.url = url;
     data.title = newTitle;
     data.updatetime = getDatetimeString();
     const newContent = `---${os.EOL}outline: ${data.outline || ''}${os.EOL}title: ${data.title}${os.EOL}url: ${data.url || ''}${os.EOL}createtime: ${data.createtime || ''}${os.EOL}updatetime: ${data.updatetime}${os.EOL}---${os.EOL}${os.EOL}` + content;
@@ -48,6 +58,24 @@ function getDatetimeString(): string {
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const seconds = String(now.getSeconds()).padStart(2, '0');
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
+// 新增函数：从 description.json 文件中提取 introduction 字段值
+function getTitleFromDescriptionFile(filePath: string): string {
+    const dirPath = path.dirname(filePath); // 获取文件所在目录
+    const descriptionPath = path.join(dirPath, 'description.json');
+
+    if (fs.existsSync(descriptionPath)) {
+        try {
+            const descriptionContent = fs.readFileSync(descriptionPath, 'utf-8');
+            const descriptionData = JSON.parse(descriptionContent);
+            return descriptionData.introduction || 'introduction3';
+        } catch (error) {
+            console.error(`解析 description.json 文件时出错: ${error.message}`);
+            return 'introduction1';
+        }
+    }
+    return 'introduction2';
 }
 
 // 文件监听
@@ -69,12 +97,23 @@ function fileWatcher(directoryToWatch: string) {
                 const fileContent = fs.readFileSync(filePath, 'utf-8');
                 // 文件有内容，是修改文件名称
                 if (fileContent.trim().length > 0) {
-                    updateTitle(filePath, fileContent);
+                    updateFrontmatter(filePath, fileContent);
                     return;
                 }
                 try {
-                    const url = crypto.createHash('md5').update(Date.now().toString()).digest('hex');
-                    const title = path.basename(filePath, path.extname(filePath));
+                    // 获取文件名并提取数字部分作为url
+                    const fileName = path.basename(filePath, path.extname(filePath));
+                    const urlMatch = fileName.match(/^\d+/);
+                    const url = urlMatch ? urlMatch[0] : -1;
+                    if (url === -1) {
+                        console.log('获取文件的 url 失败')
+                        return;
+                    }
+                    let title = fileName.replace(/^\d+/, '').replace(/\./g, '');
+                    // 如果文件名包含 introduction.md，则从 description.json 中获取 title
+                    if (fileName.includes('introduction')) {
+                        title = getTitleFromDescriptionFile(filePath);
+                    }
                     const datetime = getDatetimeString();
                     const frontmatter = `---${os.EOL}outline: deep${os.EOL}title: ${title}${os.EOL}url: ${url}${os.EOL}createtime: ${datetime}${os.EOL}updatetime: ${datetime}${os.EOL}---${os.EOL}`;
                     fs.writeFileSync(filePath, frontmatter, 'utf-8');
@@ -89,7 +128,7 @@ function fileWatcher(directoryToWatch: string) {
                 }
                 try {
                     const fileContent = fs.readFileSync(filePath, 'utf-8');
-                    updateTitle(filePath, fileContent);
+                    updateFrontmatter(filePath, fileContent);
                 } catch (error) {
                     console.error(`更新文件时出错: ${error.message}`);
                 }
