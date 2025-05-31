@@ -3,6 +3,10 @@ import { ViteDevServer } from 'vite';
 import fs from 'fs';
 import path from 'path';
 import os from 'os'
+import { articlesDir } from '../../config/extra/config';
+
+// 全局变量存储最大序号
+let maxIndex = 1;
 
 // 修改文件的frontmatter
 function updateFrontmatter(filePath: string, fileContent: string): void {
@@ -78,10 +82,42 @@ function getTitleFromDescriptionFile(filePath: string): string {
     return 'introduction2';
 }
 
+// 扫描指定目录及其子目录的所有 .md 文件，提取最大序号
+function scanAndFindMaxIndex(directory: string): number {
+    let currentMax = 0;
+    function walkDir(currentPath: string) {
+        const files = fs.readdirSync(currentPath);
+
+        for (const file of files) {
+            const filePath = path.join(currentPath, file);
+            const stat = fs.statSync(filePath);
+
+            if (stat.isDirectory()) {
+                walkDir(filePath); // 递归进入子目录
+            } else if (path.extname(file) === '.md') {
+                const match = file.match(/^(\d+)/);
+                if (match) {
+                    const index = parseInt(match[1], 10);
+                    if (index > currentMax) {
+                        currentMax = index;
+                    }
+                }
+            }
+        }
+    }
+
+    walkDir(directory);
+    return currentMax + 1; // 下一个可用序号
+}
+
 // 文件监听
 function fileWatcher(directoryToWatch: string) {
     return {
         name: 'file-watcher',
+        configResolved() {
+            // 插件配置解析完成后扫描 articles 目录获取最大序号
+            maxIndex = scanAndFindMaxIndex(articlesDir);
+        },
         configureServer(server: ViteDevServer) {
             const watcher = chokidar.watch(directoryToWatch, {
                 ignoreInitial: true,
@@ -93,6 +129,21 @@ function fileWatcher(directoryToWatch: string) {
             watcher.on('add', async (filePath: string) => {
                 if (path.extname(filePath) !== '.md') {
                     return;
+                }
+                const dir = path.dirname(filePath);
+                const baseName = path.basename(filePath, '.md');
+                const ext = path.extname(filePath);
+                // 跳过已有数字前缀的文件
+                if (!/^\d+\./.test(baseName)) {
+                    const newFileName = `${maxIndex.toString()}.${baseName}${ext}`;
+                    const newFilePath = path.join(dir, newFileName);
+                    // 防止重复重命名
+                    if (!fs.existsSync(newFilePath)) {
+                        fs.renameSync(filePath, newFilePath);
+                        maxIndex++;
+                    }
+
+                    filePath = newFilePath;
                 }
                 const fileContent = fs.readFileSync(filePath, 'utf-8');
                 // 文件有内容，是修改文件名称
