@@ -32,9 +32,6 @@ function updateFrontmatter(filePath: string, fileContent: string): void {
     if (newTitle.includes('introduction')) {
         newTitle = getTitleFromDescriptionFile(filePath);
     }
-    if (newTitle === data.title) {
-        return;
-    }
     let url: string = '';
     if (fileName.includes('introduction')) {
         url = 'introduction';
