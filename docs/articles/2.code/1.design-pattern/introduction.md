@@ -1,9 +1,9 @@
 ---
 outline: deep
-title: introduction
+title: 设计模式介绍
 url: introduction
 createtime: 2024-11-12 12:46:31
-updatetime: 2025-05-30 11:38:13
+updatetime: 2025-06-03 13:52:00
 ---
 
 # 设计模式介绍
