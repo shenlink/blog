@@ -3,10 +3,6 @@ import { ViteDevServer } from 'vite';
 import fs from 'fs';
 import path from 'path';
 import os from 'os'
-import { articlesDir } from '../../config/extra/config';
-
-// 全局变量存储最大序号
-let maxIndex = 1;
 
 // 修改文件的frontmatter
 function updateFrontmatter(filePath: string, fileContent: string): void {
@@ -117,14 +113,26 @@ function scanAndFindMaxIndex(directory: string): number {
     return currentMax + 1; // 下一个可用序号
 }
 
+function getNewNumberPrefix(directory: string): number {
+    // 遍历目录下的所有 .md 文件，找到最大的前缀数字
+    const files = fs.readdirSync(directory);
+    let maxPrefix = 0;
+    files.forEach(file => {
+        const match = file.match(/^(\d+)\./);
+        if (match) {
+            const prefix = parseInt(match[1], 10);
+            if (prefix > maxPrefix) {
+                maxPrefix = prefix;
+            }
+        }
+    });
+    return maxPrefix + 1;
+}
+
 // 文件监听
 function fileWatcher(directoryToWatch: string) {
     return {
         name: 'file-watcher',
-        configResolved() {
-            // 插件配置解析完成后扫描 articles 目录获取最大序号
-            maxIndex = scanAndFindMaxIndex(articlesDir);
-        },
         configureServer(server: ViteDevServer) {
             const watcher = chokidar.watch(directoryToWatch, {
                 ignoreInitial: true,
@@ -142,12 +150,12 @@ function fileWatcher(directoryToWatch: string) {
                 const ext = path.extname(filePath);
                 // 跳过已有数字前缀的文件
                 if (!/^\d+\./.test(baseName) && baseName !== 'introduction') {
-                    const newFileName = `${maxIndex.toString()}.${baseName}${ext}`;
+                    const newPrefix = getNewNumberPrefix(dir);
+                    const newFileName = `${newPrefix.toString()}.${baseName}${ext}`;
                     const newFilePath = path.join(dir, newFileName);
                     // 防止重复重命名
                     if (!fs.existsSync(newFilePath)) {
                         fs.renameSync(filePath, newFilePath);
-                        maxIndex++;
                     }
 
                     filePath = newFilePath;
