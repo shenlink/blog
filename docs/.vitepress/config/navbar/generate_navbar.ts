@@ -63,15 +63,9 @@ function generateNavbar(articlesDir: string): NavItem[] {
             if (files.length === 0) {
                 return;
             }
-            const introductionFile = files[0];
-            const match = introductionFile.match(/^(\d+)\.introduction\.md$/);
-            if (!match || !match[1]) {
-                return;
-            }
-            const url = `/${match[1]}`;
             subItems.push({
                 text: text,
-                link: `${articles}/${file.replace(/^\d+\./, '')}/${item.replace(/^\d+\./, '')}/${url}`,
+                link: `${articles}/${file.replace(/^\d+\./, '')}/${item.replace(/^\d+\./, '')}/introduction`,
             });
         });
 

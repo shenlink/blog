@@ -53,11 +53,12 @@ function generateRewriteConfig(): Rewrites {
                 } else {
                     const extractNumber = (str: string): number => {
                         const match = str.match(/^\d+/);
-                        return match ? parseInt(match[0], 10) : Infinity;
+                        return match ? parseInt(match[0], 10) : 0;
                     };
                     if (subCategoryPath.includes('introduction.md')) {
                         // 获取到文件名开头的数字
-                        const url = extractNumber(subCategory);
+                        const number = extractNumber(subCategory);
+                        const url = number === 0 ? 'introduction' : number.toString(10);
                         const prefixKeyPath = `${articles}/${subCategoryPath.replace(articlesDir, '').replace(/\\/g, '/').replace(/^\//, '').replace(/\/$/, '')}`;
                         const dir = path.dirname(subCategoryPath.replace(articlesDir, '')).split(path.sep).map(part => part.replace(/^\d+\./, ''));
                         const prefixValuePath = `${articles}/${path.join(...dir).replace(/\\/g, '/').replace(/^\//, '').replace(/\/$/, '')}`;
