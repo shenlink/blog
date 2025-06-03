@@ -28,7 +28,8 @@ function updateFrontmatter(filePath: string, fileContent: string): void {
         return;
     }
     const fileName = path.basename(filePath, path.extname(filePath));
-    let newTitle = fileName.replace(/^\d+/, '').replace(/\./g, '');
+    // 去除前缀数字和数字后面的"."
+    let newTitle = fileName.replace(/^\d+\./, '');
     if (newTitle.includes('introduction')) {
         newTitle = getTitleFromDescriptionFile(filePath);
     }
@@ -177,7 +178,7 @@ function fileWatcher(directoryToWatch: string) {
                         console.log('获取文件的 url 失败');
                         return;
                     }
-                    let title = fileName.replace(/^\d+/, '').replace(/\./g, '');
+                    let title = fileName.replace(/^\d+\./, '');
                     // 如果文件名包含 introduction.md，则从 description.json 中获取 title
                     if (fileName.includes('introduction')) {
                         title = getTitleFromDescriptionFile(filePath);
