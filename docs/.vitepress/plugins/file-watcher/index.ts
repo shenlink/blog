@@ -39,10 +39,15 @@ function updateFrontmatter(filePath: string, fileContent: string): void {
     if (newTitle === data.title) {
         return;
     }
-    const urlMatch = fileName.match(/^\d+/);
-    const url = urlMatch ? urlMatch[0] : -1;
-    if (url === -1) {
-        console.log('获取文件的 url 失败')
+    let url: string = '';
+    if (fileName.includes('introduction')) {
+        url = 'introduction';
+    } else {
+        const urlMatch = fileName.match(/^\d+/);
+        url = urlMatch ? urlMatch[0] : '';
+    }
+    if (url === '') {
+        console.log('获取文件的 url 失败');
         return;
     }
     data.url = url;
@@ -69,17 +74,19 @@ function getTitleFromDescriptionFile(filePath: string): string {
     const dirPath = path.dirname(filePath); // 获取文件所在目录
     const descriptionPath = path.join(dirPath, 'description.json');
 
-    if (fs.existsSync(descriptionPath)) {
-        try {
-            const descriptionContent = fs.readFileSync(descriptionPath, 'utf-8');
-            const descriptionData = JSON.parse(descriptionContent);
-            return descriptionData.introduction || 'introduction3';
-        } catch (error) {
-            console.error(`解析 description.json 文件时出错: ${error.message}`);
-            return 'introduction1';
-        }
+    if (!fs.existsSync(descriptionPath)) {
+        throw new Error(`description.json 文件不存在于目录 ${dirPath}`);
     }
-    return 'introduction2';
+    try {
+        const descriptionContent = fs.readFileSync(descriptionPath, 'utf-8');
+        const descriptionData = JSON.parse(descriptionContent);
+        if (!descriptionData.introduction) {
+            throw new Error(`description.json 文件中缺少 introduction 字段：${descriptionPath}`);
+        }
+        return descriptionData.introduction;
+    } catch (error) {
+        throw new Error(`解析 description.json 文件时出错：${error.message}`);
+    }
 }
 
 // 扫描指定目录及其子目录的所有 .md 文件，提取最大序号
@@ -134,7 +141,7 @@ function fileWatcher(directoryToWatch: string) {
                 const baseName = path.basename(filePath, '.md');
                 const ext = path.extname(filePath);
                 // 跳过已有数字前缀的文件
-                if (!/^\d+\./.test(baseName)) {
+                if (!/^\d+\./.test(baseName) && baseName !== 'introduction') {
                     const newFileName = `${maxIndex.toString()}.${baseName}${ext}`;
                     const newFilePath = path.join(dir, newFileName);
                     // 防止重复重命名
@@ -152,12 +159,17 @@ function fileWatcher(directoryToWatch: string) {
                     return;
                 }
                 try {
-                    // 获取文件名并提取数字部分作为url
+                    // 获取文件名并提取数字部分作为 url
                     const fileName = path.basename(filePath, path.extname(filePath));
-                    const urlMatch = fileName.match(/^\d+/);
-                    const url = urlMatch ? urlMatch[0] : -1;
-                    if (url === -1) {
-                        console.log('获取文件的 url 失败')
+                    let url: string = '';
+                    if (fileName === 'introduction') {
+                        url = 'introduction';
+                    } else {
+                        const urlMatch = fileName.match(/^\d+/);
+                        url = urlMatch ? urlMatch[0] : '';
+                    }
+                    if (url === '') {
+                        console.log('获取文件的 url 失败');
                         return;
                     }
                     let title = fileName.replace(/^\d+/, '').replace(/\./g, '');
