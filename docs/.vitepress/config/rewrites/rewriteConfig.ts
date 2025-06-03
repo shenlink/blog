@@ -1,6 +1,6 @@
 
 import fs from 'fs';
-import path, { dirname } from 'path';
+import path from 'path';
 import matter from 'gray-matter';
 import { articlesDir } from '../extra/config';
 
