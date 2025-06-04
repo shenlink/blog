@@ -44,6 +44,14 @@ function getDescriptionIntroduction(directoryPath: string, itemName?: string): s
     return itemName || path.basename(directoryPath);
 }
 
+function cleanPathSegment(segment: string): string {
+    return segment.replace(/^\d+\./, '');
+}
+
+function normalizePath(p: string): string {
+    return p.split(path.sep).filter(Boolean).join('/');
+}
+
 // 递归扫描目录并生成 sidebar
 function generateSidebar(articlesDir: string): Sidebar {
     const articles = path.basename(articlesDir)
@@ -54,24 +62,17 @@ function generateSidebar(articlesDir: string): Sidebar {
     // 扫描目录
     function scanDirectory(dir: string): SidebarItem[] {
         const items: SidebarItem[] = [];
-        const files = fs.readdirSync(dir);
-        let sortedFiles = files
-        sortedFiles = files.sort((a, b) => {
-            // 提取目录名称中的数字部分
+        const files = fs.readdirSync(dir).sort((a, b) => {
             const extractNumber = (str: string): number => {
                 const match = str.match(/^\d+/);
                 return match ? parseInt(match[0], 10) : Infinity;
             };
-
-            const numA = extractNumber(a);
-            const numB = extractNumber(b);
-
             // 按数字大小排序
-            return numA - numB;
+            return extractNumber(a) - extractNumber(b);
         });
         // 先收集所有的 .md 文件
         const mdFiles: SidebarItem[] = [];
-        sortedFiles.forEach((file) => {
+        files.forEach((file) => {
             const filePath = path.join(dir, file);
             // 判断是否是 skipDirs 目录下的 introduction.md 文件，跳过
             const dirName = path.basename(dir);
@@ -87,13 +88,19 @@ function generateSidebar(articlesDir: string): Sidebar {
                 });
             } else if (file.endsWith('.md')) {
                 const fileContent = fs.readFileSync(filePath, 'utf-8');
-                const { data, content } = matter(fileContent);
-                const url = data.url;
+                const { data } = matter(fileContent);
+                const url = data.url || file.replace('.md', '');
                 // 如果是Markdown文件，添加到列表
+                const relativeDir = normalizePath(dir.replace(articlesDir, ''));
+                const cleanedDir = relativeDir
+                    .split('/')
+                    .map(cleanPathSegment)
+                    .filter(Boolean)
+                    .join('/');
+
                 mdFiles.push({
                     text: file.replace('.md', '').replace(/^\d+\./, ''),
-                    // 去掉url中的数字和.
-                    link: `/${articles}/${dir.replace(articlesDir, '').replace(/\\(\d+\.)/g, '\\').replace(/\\/g, '/').replace(/^\//, '').replace(/\/$/, '')}/${url}`,
+                    link: `/${articles}/${cleanedDir}/${url}`,
                 });
             }
         });
@@ -116,15 +123,16 @@ function generateSidebar(articlesDir: string): Sidebar {
         const categoryPath = path.join(articlesDir, category);
         const stat = fs.statSync(categoryPath);
         if (stat.isDirectory()) {
-            // 为每个articlesDir目录的目录生成 sidebar 配置
-            sidebar[`/${articles}/${category.replace(/^\d+\./, '')}/`] = scanDirectory(categoryPath);
-            // 递归处理子目录
+            const categoryKey = cleanPathSegment(category);
+            sidebar[`/${articles}/${categoryKey}/`] = scanDirectory(categoryPath);
+
             const subCategories = fs.readdirSync(categoryPath);
             subCategories.forEach((subCategory) => {
                 const subCategoryPath = path.join(categoryPath, subCategory);
                 const subStat = fs.statSync(subCategoryPath);
                 if (subStat.isDirectory()) {
-                    sidebar[`/${articles}/${category.replace(/^\d+\./, '')}/${subCategory.replace(/^\d+\./, '')}/`] = scanDirectory(subCategoryPath);
+                    const subCategoryKey = cleanPathSegment(subCategory);
+                    sidebar[`/${articles}/${categoryKey}/${subCategoryKey}/`] = scanDirectory(subCategoryPath);
                 }
             });
         }
