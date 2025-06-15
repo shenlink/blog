@@ -4,6 +4,9 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os'
 
+// 用于存储文件修改时间
+const fileModifyTimes: Record<string, string> = {};
+
 // 修改文件的frontmatter
 function updateFrontmatter(filePath: string, fileContent: string): void {
     // 提取 frontmatter 和 content
@@ -46,9 +49,13 @@ function updateFrontmatter(filePath: string, fileContent: string): void {
     }
     data.url = url;
     data.title = newTitle;
-    data.updatetime = getDatetimeString();
+    // 使用存储的修改时间，而不是重新获取当前时间
+    const updatetime = fileModifyTimes[filePath] || getDatetimeString();
+    data.updatetime = updatetime;
     const newContent = `---${os.EOL}outline: ${data.outline || ''}${os.EOL}title: ${data.title}${os.EOL}url: ${data.url || ''}${os.EOL}createtime: ${data.createtime || ''}${os.EOL}updatetime: ${data.updatetime}${os.EOL}---${os.EOL}${os.EOL}` + content;
     fs.writeFileSync(filePath, newContent, 'utf8');
+    // 删除存储的修改时间
+    delete fileModifyTimes[filePath];
 }
 
 // 获取当前时间，格式为 YYYY-MM-DD HH:mm:ss
@@ -129,6 +136,8 @@ function getNewNumberPrefix(directory: string): number {
 
 // 文件监听
 function fileWatcher(directoryToWatch: string) {
+    let debounceTimer: NodeJS.Timeout | null = null; // 用于防抖的定时器
+    let isDebouncing = false; // 标志变量，表示是否正在防抖中
     return {
         name: 'file-watcher',
         configureServer(server: ViteDevServer) {
@@ -195,15 +204,29 @@ function fileWatcher(directoryToWatch: string) {
                 if (path.extname(filePath) !== '.md') {
                     return;
                 }
-                try {
-                    const fileContent = fs.readFileSync(filePath, 'utf-8');
-                    updateFrontmatter(filePath, fileContent);
-                } catch (error) {
-                    console.error(`更新文件时出错: ${error.message}`);
+                // 记录文件修改时间
+                fileModifyTimes[filePath] = getDatetimeString();
+
+                // 防抖逻辑，确保30秒后才触发更新
+                if (!isDebouncing) {
+                    isDebouncing = true; // 设置标志变量，表示正在防抖中
+                    debounceTimer = setTimeout(async () => {
+                        try {
+                            const fileContent = fs.readFileSync(filePath, 'utf-8');
+                            updateFrontmatter(filePath, fileContent);
+                        } catch (error) {
+                            console.error(`更新文件时出错: ${error.message}`);
+                        } finally {
+                            isDebouncing = false; // 重置标志变量
+                        }
+                    }, 30000); // 延迟30秒执行
                 }
             });
             server.httpServer?.on('close', () => {
                 watcher.close();
+                if (debounceTimer) {
+                    clearTimeout(debounceTimer); // 清除定时器
+                }
             });
         },
     };
