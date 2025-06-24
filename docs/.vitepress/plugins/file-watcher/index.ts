@@ -90,34 +90,6 @@ function getTitleFromDescriptionFile(filePath: string): string {
     }
 }
 
-// 扫描指定目录及其子目录的所有 .md 文件，提取最大序号
-function scanAndFindMaxIndex(directory: string): number {
-    let currentMax = 0;
-    function walkDir(currentPath: string) {
-        const files = fs.readdirSync(currentPath);
-
-        for (const file of files) {
-            const filePath = path.join(currentPath, file);
-            const stat = fs.statSync(filePath);
-
-            if (stat.isDirectory()) {
-                walkDir(filePath); // 递归进入子目录
-            } else if (path.extname(file) === '.md') {
-                const match = file.match(/^(\d+)/);
-                if (match) {
-                    const index = parseInt(match[1], 10);
-                    if (index > currentMax) {
-                        currentMax = index;
-                    }
-                }
-            }
-        }
-    }
-
-    walkDir(directory);
-    return currentMax + 1; // 下一个可用序号
-}
-
 function getNewNumberPrefix(directory: string): number {
     // 遍历目录下的所有 .md 文件，找到最大的前缀数字
     const files = fs.readdirSync(directory);
@@ -137,7 +109,6 @@ function getNewNumberPrefix(directory: string): number {
 // 文件监听
 function fileWatcher(directoryToWatch: string) {
     let debounceTimer: NodeJS.Timeout | null = null; // 用于防抖的定时器
-    let isDebouncing = false; // 标志变量，表示是否正在防抖中
     return {
         name: 'file-watcher',
         configureServer(server: ViteDevServer) {
@@ -207,20 +178,22 @@ function fileWatcher(directoryToWatch: string) {
                 // 记录文件修改时间
                 fileModifyTimes[filePath] = getDatetimeString();
 
-                // 防抖逻辑，确保30秒后才触发更新
-                if (!isDebouncing) {
-                    isDebouncing = true; // 设置标志变量，表示正在防抖中
-                    debounceTimer = setTimeout(async () => {
-                        try {
-                            const fileContent = fs.readFileSync(filePath, 'utf-8');
-                            updateFrontmatter(filePath, fileContent);
-                        } catch (error) {
-                            console.error(`更新文件时出错: ${error.message}`);
-                        } finally {
-                            isDebouncing = false; // 重置标志变量
-                        }
-                    }, 30000); // 延迟30秒执行
+                // 清除之前的定时器（如果存在）
+                if (debounceTimer) {
+                    clearTimeout(debounceTimer);
                 }
+
+                // 重新设置新的定时器
+                debounceTimer = setTimeout(async () => {
+                    try {
+                        const fileContent = fs.readFileSync(filePath, 'utf-8');
+                        updateFrontmatter(filePath, fileContent);
+                    } catch (error) {
+                        console.error(`更新文件时出错: ${error.message}`);
+                    } finally {
+                        debounceTimer = null; // 执行完成后清空定时器引用
+                    }
+                }, 30000); // 延迟30秒执行
             });
             server.httpServer?.on('close', () => {
                 watcher.close();
