@@ -227,7 +227,7 @@ function fileWatcher(directoryToWatch: string) {
                     } finally {
                         debounceTimer = null; // 执行完成后清空定时器引用
                     }
-                }, 30000); // 延迟30秒执行
+                }, 10000); // 延迟10秒执行
             });
             server.httpServer?.on('close', () => {
                 watcher.close();
