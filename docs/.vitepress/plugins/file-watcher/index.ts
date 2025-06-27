@@ -2,7 +2,8 @@ import chokidar from 'chokidar';
 import { ViteDevServer } from 'vite';
 import fs from 'fs';
 import path from 'path';
-import os from 'os'
+import os from 'os';
+import crypto from 'crypto';
 
 // 用于存储文件修改时间
 const fileModifyTimes: Record<string, string> = {};
@@ -106,9 +107,21 @@ function getNewNumberPrefix(directory: string): number {
     return maxPrefix + 1;
 }
 
+// 删除 frontmatter
+function removeFrontmatter(content: string): string {
+    // 提取 frontmatter 并返回剩余内容
+    const frontmatterMatch = content.trim().match(/^---[\r\n]([\s\S]*?)[\r\n]---/);
+    if (!frontmatterMatch) {
+        return content; // 没有 frontmatter，直接返回原始内容
+    }
+    return content.substring(frontmatterMatch[0].length).trimStart();
+}
+
 // 文件监听
 function fileWatcher(directoryToWatch: string) {
     let debounceTimer: NodeJS.Timeout | null = null; // 用于防抖的定时器
+    // 修改：记录上次处理时的文件内容哈希值（MD5）
+    let lastContentMap = new Map<string, string>();
     return {
         name: 'file-watcher',
         configureServer(server: ViteDevServer) {
@@ -175,6 +188,28 @@ function fileWatcher(directoryToWatch: string) {
                 if (path.extname(filePath) !== '.md') {
                     return;
                 }
+
+                let currentContent = '';
+                let currentHash = '';
+                try {
+                    currentContent = fs.readFileSync(filePath, 'utf-8');
+                    // 去除 frontmatter 后再计算内容的 MD5
+                    const contentWithoutFrontmatter = removeFrontmatter(currentContent);
+                    currentHash = crypto.createHash('md5').update(contentWithoutFrontmatter).digest('hex');
+                    const lastHash = lastContentMap.get(filePath);
+
+                    // 如果内容没有变化，直接跳过
+                    if (currentHash === lastHash) {
+                        return;
+                    }
+
+                    // 更新最后内容记录为当前内容的 MD5
+                    lastContentMap.set(filePath, currentHash);
+                } catch (error) {
+                    console.error(`读取文件时出错: ${error.message}`);
+                    return;
+                }
+
                 // 记录文件修改时间
                 fileModifyTimes[filePath] = getDatetimeString();
 
@@ -186,8 +221,7 @@ function fileWatcher(directoryToWatch: string) {
                 // 重新设置新的定时器
                 debounceTimer = setTimeout(async () => {
                     try {
-                        const fileContent = fs.readFileSync(filePath, 'utf-8');
-                        updateFrontmatter(filePath, fileContent);
+                        updateFrontmatter(filePath, currentContent);
                     } catch (error) {
                         console.error(`更新文件时出错: ${error.message}`);
                     } finally {
