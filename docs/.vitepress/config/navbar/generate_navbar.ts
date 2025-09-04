@@ -24,6 +24,11 @@ function getDescriptionName(directoryPath: string, itemName?: string): string {
     return itemName || path.basename(directoryPath);
 }
 
+/**
+ * 生成网站导航栏配置
+ * @param articlesDir 文章目录路径
+ * @returns 导航栏项数组
+ */
 function generateNavbar(articlesDir: string): NavItem[] {
     const articles = path.basename(articlesDir)
     const nav: NavItem[] = [];
